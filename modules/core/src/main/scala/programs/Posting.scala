@@ -5,16 +5,17 @@ import cats.effect.std.*
 import cats.*
 import cats.implicits.*
 
+import textboard.domain.*
 import textboard.services.*
 
 def createThread[F[_]: Console: Monad](
     posts: Posts[F],
-    threads: Threads[F]
+    threads: Threads[F],
+    text: String
 ): F[Int] = for
   title <- Console[F].readLine
   text <- Console[F].readLine
-  p <- posts.create(text)
-  id <- threads.create(title, p)
+  id <- threads.create(title, text)
 yield id
 
 def addPost[F[_]: Console: Monad](
@@ -22,11 +23,10 @@ def addPost[F[_]: Console: Monad](
     threads: Threads[F],
     id: Int
 ): F[Unit] = for
-  t <- threads.get(id)
-  _ <- Monad[F].whenA(t.isDefined)(
-    Console[F].readLine >>= (posts.create(_)) >>= (threads.add(_, id))
-  )
+  text <- Console[F].readLine
+  post <- posts.create(text)
+  _ <- threads.add(post, id)
 yield ()
 
 def showBoard[F[_]: Console: Monad](threads: Threads[F]): F[Unit] =
-  threads.getAll >>= (_.traverse(Console[F].print).void)
+  threads.getAll >>= (_.traverse_(Console[F].print))

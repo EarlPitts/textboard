@@ -18,11 +18,14 @@ object Posts:
       counter: Ref[F, Int]
   ): Posts[F] = new Posts[F]:
     def get(id: Int, thread: Thread): F[Option[Post]] =
-      Monad[F].pure(thread.posts.find(_.id === id))
+      thread.posts.find(_.id === id).pure
+
     def create(text: String): F[Post] = for
       id <- counter.get
       time <- Clock[F].realTime
       post = Post(id, text, time)
       _ <- counter.update(_ + 1)
     yield post
-    def getAll(thread: Thread): F[List[Post]] = Monad[F].pure(thread.posts)
+
+    def getAll(thread: Thread): F[List[Post]] =
+      thread.posts.pure
