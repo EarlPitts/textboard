@@ -21,12 +21,17 @@ object Threads:
       threads: Ref[F, List[Thread]],
       counter: Ref[F, Int]
   ): Threads[F] = new Threads[F]:
-    def create(title: String, text: String): F[Int] = for
-      id <- counter.get
-      thread = Thread(id, title, text, List())
-      _ <- threads.update(thread :: _)
-      _ <- counter.update(_ + 1)
-    yield id
+    def create(title: String, text: String): F[Int] =
+      counter
+        .modify { id =>
+          val thread = Thread(id, title, text, List())
+          (id + 1, thread)
+        }
+        .flatMap { thread =>
+          threads
+            .update(thread :: _)
+            .as(thread.id)
+        }
 
     def add(post: Post, id: Int): F[Unit] = threads.update { ts =>
       ts.find(_.id === id) match
