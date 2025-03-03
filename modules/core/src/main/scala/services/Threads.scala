@@ -28,13 +28,14 @@ object Threads:
       _ <- counter.update(_ + 1)
     yield id
 
-    def add(post: Post, id: Int): F[Unit] = for
-      t <- get(id)
-      _ <- t.fold(().pure) { t =>
-        val updated = Thread(t.id, t.title, t.text, (post :: t.posts))
-        threads.update(ts => updated :: ts.filter(_.id =!= id))
-      }
-    yield ()
+    def add(post: Post, id: Int): F[Unit] = threads.update { ts =>
+      ts.find(_.id === id) match
+        case Some(t) => {
+          val updated = Thread(t.id, t.title, t.text, post :: t.posts)
+          updated :: ts.filter(_.id =!= id)
+        }
+        case None => ts
+    }
 
     def get(id: Int): F[Option[Thread]] = threads.get.map(_.find(_.id === id))
 
