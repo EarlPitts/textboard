@@ -3,8 +3,6 @@ package services
 import cats.*
 import cats.implicits.*
 import cats.effect.*
-import cats.effect.std.Console
-import cats.implicits._
 import weaver.*
 
 import textboard.domain.*
@@ -115,5 +113,5 @@ object ThreadSuite extends SimpleIOSuite:
        service = Threads.inMemThreads(threads, counter)
        _ <- List.fill(threadNum)(service.create("Title", "Text")).parSequence_
        threadList <- threads.get
-     yield expect(threadList.size === threadNum)
+     yield expect(threadList.map(_.id).distinct.size === threadNum)
    }
