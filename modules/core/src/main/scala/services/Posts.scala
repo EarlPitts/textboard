@@ -21,12 +21,15 @@ object Posts:
     def get(id: Int, thread: Thread): F[Option[Post]] =
       thread.posts.find(_.id === id).pure
 
-    def create(text: String): F[Post] = for
-      id <- counter.get
-      time <- Clock[F].realTime
-      post = Post(id, text, time)
-      _ <- counter.update(_ + 1)
-    yield post
+    def create(text: String): F[Post] =
+      Clock[F].realTime
+        .flatMap { time =>
+          counter
+            .modify { id =>
+              val post = Post(id, text, time)
+              (id + 1, post)
+            }
+        }
 
     def getAll(thread: Thread): F[List[Post]] =
       thread.posts.pure
