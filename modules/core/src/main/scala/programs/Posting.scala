@@ -10,8 +10,7 @@ import textboard.services.*
 
 def createThread[F[_]: Console: Monad](
     posts: Posts[F],
-    threads: Threads[F],
-    text: String
+    threads: Threads[F]
 ): F[Int] = for
   title <- Console[F].readLine
   text <- Console[F].readLine

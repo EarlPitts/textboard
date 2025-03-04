@@ -55,10 +55,10 @@ object Main extends IOApp.Simple:
   yield ()
 
   def program[F[_]: Monad: Console](threads: Threads[F], posts: Posts[F]) = for
-    id <- createThread(posts, threads, "My first thread")
+    id <- createThread(posts, threads)
     _ <- addPost(posts, threads, id)
     _ <- addPost(posts, threads, id)
-    id2 <- createThread(posts, threads, "My best thread")
+    id2 <- createThread(posts, threads)
     _ <- addPost(posts, threads, id2)
     _ <- showBoard(threads)
   yield ()
