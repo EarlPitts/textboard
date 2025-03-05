@@ -5,7 +5,6 @@ import cats.implicits.*
 import cats.effect.*
 import cats.effect.kernel.*
 import cats.effect.std.*
-import skunk.*
 
 import textboard.domain.*
 
@@ -33,22 +32,3 @@ object Posts:
 
     def getAll(thread: Thread): F[List[Post]] =
       thread.posts.pure
-//
-//   def inMemPosts[F[_]: Monad: Clock](
-//       postgres: Resource[IO, Session[IO]]
-//   ): Posts[F] = new Posts[F]:
-//     def get(id: Int, tid: Int): F[Option[Post]] =
-//       postgres.use { session =>
-//         session -> ???
-//       }
-//     def create(text: String): F[Post] = for
-//       id <- counter.get
-//       time <- Clock[F].realTime
-//       post = Post(id, text, time)
-//       _ <- counter.update(_ + 1)
-//     yield post
-//     def getAll(thread: Thread): F[List[Post]] = Monad[F].pure(thread.posts)
-//
-// // object PostsSQL:
-//
-//
