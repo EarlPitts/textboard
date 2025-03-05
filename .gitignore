@@ -1,1 +1,5 @@
 **/target
+.scalafmt.conf
+modules/tests/src/test/scala/services/services.worksheet.sc
+project/metals.sbt
+project/project/
