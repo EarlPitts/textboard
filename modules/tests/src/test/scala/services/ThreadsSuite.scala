@@ -11,7 +11,7 @@ import scala.concurrent.duration.*
 
 object ThreadSuite extends SimpleIOSuite:
 
-  val testPost = Post(1, "test post", 1.second)
+  val testPost = Post(1, "test post", 1)
 
   test("Counter is incremented") {
     val threadNum = 100
@@ -19,7 +19,7 @@ object ThreadSuite extends SimpleIOSuite:
       counter <- Ref.of(0)
       threads <- Ref.of(List[Thread]())
       service = Threads.inMemThreads(threads, counter)
-      _ <- List.fill(threadNum)(service.create("Title", "Text")).sequence_
+      _ <- service.create("Title", "Text").replicateA_(threadNum)
       count <- counter.get
     yield expect(count === threadNum)
   }
@@ -30,7 +30,7 @@ object ThreadSuite extends SimpleIOSuite:
       counter <- Ref.of(0)
       threads <- Ref.of(List[Thread]())
       service = Threads.inMemThreads(threads, counter)
-      _ <- List.fill(threadNum)(service.create("Title", "Text")).sequence_
+      _ <- service.create("Title", "Text").replicateA_(threadNum)
       threadList <- threads.get
     yield expect(threadList.map(_.id) === List.range(0, 100).reverse)
   }
@@ -41,7 +41,7 @@ object ThreadSuite extends SimpleIOSuite:
       counter <- Ref.of(0)
       threads <- Ref.of(List[Thread]())
       service = Threads.inMemThreads(threads, counter)
-      _ <- List.fill(threadNum)(service.create("Title", "Text")).sequence_
+      _ <- service.create("Title", "Text").replicateA(threadNum)
       threadList <- threads.get
       threadList2 <- service.getAll
     yield expect(threadList == threadList2)
@@ -53,7 +53,7 @@ object ThreadSuite extends SimpleIOSuite:
       counter <- Ref.of(0)
       threads <- Ref.of(List[Thread]())
       service = Threads.inMemThreads(threads, counter)
-      _ <- List.fill(threadNum)(service.create("Title", "Text")).sequence_
+      _ <- service.create("Title", "Text").replicateA(threadNum)
       threadList <- List.range(0, 100).traverse(service.get)
       threadList2 <- service.getAll
     yield expect(threadList.map(_.get).size == threadList2.size)
@@ -65,10 +65,12 @@ object ThreadSuite extends SimpleIOSuite:
       counter <- Ref.of(0)
       threads <- Ref.of(List[Thread]())
       service = Threads.inMemThreads(threads, counter)
-      _ <- List.fill(10)(service.create("Title", "Text")).sequence_
-      _ <- List.range(0, 10).traverse_(service.add(testPost, _))
+      _ <- service.create("Title", "Text").replicateA_(10)
+      _ <- service.create("Title", "Text")
+      ids <- List.range(0, 10).traverse(service.add(testPost, _))
       threadList <- threads.get
-    yield expect(threadList.forall(_.posts.head == testPost))
+    yield expect(threadList.forall(_.posts.head == testPost)) and
+      expect(ids.forall(_.isDefined))
   }
 
   test("Adding posts to non-existing thread fails") {
@@ -77,10 +79,11 @@ object ThreadSuite extends SimpleIOSuite:
       counter <- Ref.of(0)
       threads <- Ref.of(List[Thread]())
       service = Threads.inMemThreads(threads, counter)
-      _ <- List.fill(10)(service.create("Title", "Text")).sequence_
-      _ <- service.add(testPost, 100)
+      _ <- service.create("Title", "Text").replicateA_(postNum)
+      id <- service.add(testPost, 100)
       threadList <- threads.get
-    yield expect(threadList.forall(_.posts.isEmpty))
+    yield expect(threadList.forall(_.posts.isEmpty)) and
+      expect(id.isEmpty)
   }
 
   test("Thread with invalid id is not found") {
@@ -88,7 +91,7 @@ object ThreadSuite extends SimpleIOSuite:
       counter <- Ref.of(0)
       threads <- Ref.of(List[Thread]())
       service = Threads.inMemThreads(threads, counter)
-      _ <- List.fill(10)(service.create("Title", "Text")).sequence_
+      _ <- service.create("Title", "Text").replicateA_(10)
       thread <- service.get(100)
     yield expect(thread.isEmpty)
   }
@@ -100,18 +103,18 @@ object ThreadSuite extends SimpleIOSuite:
       threads <- Ref.of(List[Thread]())
       service = Threads.inMemThreads(threads, counter)
       _ <- service.create("Title", "Text")
-      _ <- List.fill(postNum)(service.add(testPost, 0)).parSequence_
+      _ <- service.add(testPost, 0).replicateA_(postNum)
       t <- service.get(0)
     yield expect(t.get.posts.size == postNum)
   }
 
-   test("Concurrent thread creation") {
+  test("Concurrent thread creation") {
     val threadNum = 100
-     for
-       counter <- Ref.of(0)
-       threads <- Ref.of(List[Thread]())
-       service = Threads.inMemThreads(threads, counter)
-       _ <- List.fill(threadNum)(service.create("Title", "Text")).parSequence_
-       threadList <- threads.get
-     yield expect(threadList.map(_.id).distinct.size === threadNum)
-   }
+    for
+      counter <- Ref.of(0)
+      threads <- Ref.of(List[Thread]())
+      service = Threads.inMemThreads(threads, counter)
+      _ <- service.create("Title", "Text").replicateA_(threadNum)
+      threadList <- threads.get
+    yield expect(threadList.map(_.id).distinct.size === threadNum)
+  }

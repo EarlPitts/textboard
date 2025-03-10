@@ -15,3 +15,8 @@ object Thread:
     def show(t: Thread): String =
       s"------------------------------------------------------\n" ++
         s"Thread no. ${t.id} ${t.title}\n${t.text}\n${t.posts.map(_.show).mkString("\n")}"
+
+case class ThreadRequest(title: String, text: String)
+
+object ThreadRequest:
+  given Show[ThreadRequest] = _.title

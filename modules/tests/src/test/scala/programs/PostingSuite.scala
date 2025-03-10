@@ -71,11 +71,11 @@ object PostingSuite extends SimpleIOSuite:
       """------------------------------------------------------
         |Thread no. 0 testInput
         |testInput
-        |        Post no. 0      testInput       0 microseconds
+        |        Post no. 0      testInput       0             
         |------------------------------------------------------
         |Thread no. 1 testInput
         |testInput
-        |        Post no. 1      testInput       0 microseconds
+        |        Post no. 1      testInput       0             
         """.stripMargin.replaceAll("\\s", "")
     TestControl.executeEmbed {
       for

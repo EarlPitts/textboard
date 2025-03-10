@@ -25,7 +25,7 @@ object Posts:
         .flatMap { time =>
           counter
             .modify { id =>
-              val post = Post(id, text, time)
+              val post = Post(id, text, time.toSeconds)
               (id + 1, post)
             }
         }

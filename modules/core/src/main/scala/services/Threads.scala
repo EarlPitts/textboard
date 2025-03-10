@@ -10,7 +10,7 @@ import textboard.domain.*
 
 trait Threads[F[_]]:
   def create(title: String, text: String): F[Int]
-  def add(post: Post, id: Int): F[Unit]
+  def add(post: Post, id: Int): F[Option[Int]]
   def get(id: Int): F[Option[Thread]]
   def getAll: F[List[Thread]]
 
@@ -31,14 +31,15 @@ object Threads:
             .as(thread.id)
         }
 
-    def add(post: Post, id: Int): F[Unit] = threads.update { ts =>
-      ts.find(_.id === id) match
-        case Some(t) => {
-          val updated = Thread(t.id, t.title, t.text, post :: t.posts)
-          updated :: ts.filter(_.id =!= id)
-        }
-        case None => ts
-    }
+    def add(post: Post, id: Int): F[Option[Int]] =
+      threads.modify { ts =>
+        ts.find(_.id === id) match
+          case Some(t) => {
+            val updated = Thread(t.id, t.title, t.text, post :: t.posts)
+            (updated :: ts.filter(_.id =!= id), Some(post.id))
+          }
+          case None => (ts, None)
+      }
 
     def get(id: Int): F[Option[Thread]] = threads.get.map(_.find(_.id === id))
 
