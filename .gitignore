@@ -3,3 +3,4 @@
 modules/tests/src/test/scala/services/services.worksheet.sc
 project/metals.sbt
 project/project/
+.bsp
