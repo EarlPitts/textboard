@@ -7,7 +7,7 @@ lazy val root = (project in file("."))
   )
   .aggregate(core, tests)
 
-lazy val http4sVersion = "1.0.0-M44"
+lazy val http4sVersion = "0.23.30"
 val circeVersion = "0.14.10"
 
 lazy val circe = Seq(
@@ -27,7 +27,8 @@ lazy val core = (project in file("modules/core")).settings(
     "org.http4s" %% "http4s-ember-server" % http4sVersion,
     "org.http4s" %% "http4s-dsl" % http4sVersion,
     "org.http4s" %% "http4s-circe" % http4sVersion,
-    "org.typelevel" %% "log4cats-slf4j" % "2.7.0"
+    "org.typelevel" %% "log4cats-slf4j" % "2.7.0",
+    "ch.qos.logback" % "logback-classic" % "1.2.11"
   ) ++ circe
   
 )

@@ -7,16 +7,16 @@ import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.circe.*
-import io.circe.generic.auto.*
 import scala.concurrent.duration.FiniteDuration
 import io.circe.*
 import io.circe.syntax.*
+import io.circe.generic.auto.*
 
 import textboard.services.Threads
 import textboard.services.Posts
 import textboard.domain.*
 
-case class TextboardRoutes[F[_]: Concurrent](
+case class TextboardRoutes[F[_]: Monad: JsonDecoder](
     threads: Threads[F],
     posts: Posts[F]
 ) extends Http4sDsl[F]:
