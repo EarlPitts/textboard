@@ -47,6 +47,6 @@ object PostsSuite extends SimpleIOSuite:
     for
       counter <- Ref.of[IO, Int](0)
       service = Posts.inMemPosts[IO](counter)
-      posts <- service.create(postText).replicateA(postNum)
+      posts <- service.create(postText).parReplicateA(postNum)
     yield expect(posts.map(_.id).distinct.size === postNum)
   }

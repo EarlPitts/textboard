@@ -20,16 +20,11 @@ object Threads:
       counter: Ref[F, Int]
   ): Threads[F] = new Threads[F]:
     def create(title: String, text: String): F[Int] =
-      counter
-        .modify { id =>
-          val thread = Thread(id, title, text, List())
-          (id + 1, thread)
-        }
-        .flatMap { thread =>
-          threads
-            .update(thread :: _)
-            .as(thread.id)
-        }
+      threads.modify { ts =>
+        val id = ts.size
+        val thread = Thread(ts.size, title, text, List())
+        (thread :: ts, id)
+      }
 
     def add(post: Post, id: Int): F[Option[Int]] =
       threads.modify { ts =>

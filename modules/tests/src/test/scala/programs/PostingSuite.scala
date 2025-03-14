@@ -35,11 +35,10 @@ object PostingSuite extends SimpleIOSuite:
   test("createThread creates valid threads") {
     val threadNum = 10
     for
-      postsCounter <- Ref.of(0)
-      threadsCounter <- Ref.of(0)
+      counter <- Ref.of(0)
       threadsList <- Ref.of(List.empty[Thread])
-      postsService = Posts.inMemPosts(postsCounter)
-      threadsService = Threads.inMemThreads(threadsList, threadsCounter)
+      postsService = Posts.inMemPosts(counter)
+      threadsService = Threads.inMemThreads(threadsList)
       _ <- List
         .fill(threadNum)(createThread(postsService, threadsService))
         .parSequence_
@@ -51,11 +50,10 @@ object PostingSuite extends SimpleIOSuite:
     val threadNum = 10
     val threadId = 5
     for
-      postsCounter <- Ref.of(0)
-      threadsCounter <- Ref.of(0)
+      counter <- Ref.of(0)
       threadsList <- Ref.of(List.empty[Thread])
-      postsService = Posts.inMemPosts(postsCounter)
-      threadsService = Threads.inMemThreads(threadsList, threadsCounter)
+      postsService = Posts.inMemPosts(counter)
+      threadsService = Threads.inMemThreads(threadsList)
       _ <- List
         .fill(threadNum)(createThread(postsService, threadsService))
         .parSequence_
@@ -81,11 +79,10 @@ object PostingSuite extends SimpleIOSuite:
       for
         outputRef <- Ref.of(List.empty[String])
         c = testConsole(outputRef)
-        postsCounter <- Ref.of(0)
-        threadsCounter <- Ref.of(0)
+        counter <- Ref.of(0)
         threadsList <- Ref.of(List.empty[Thread])
-        postsService = Posts.inMemPosts(postsCounter)
-        threadsService = Threads.inMemThreads(threadsList, threadsCounter)
+        postsService = Posts.inMemPosts(counter)
+        threadsService = Threads.inMemThreads(threadsList)
         id1 <- createThread(postsService, threadsService)
         id2 <- createThread(postsService, threadsService)
         _ <- addPost(postsService, threadsService, id1)
