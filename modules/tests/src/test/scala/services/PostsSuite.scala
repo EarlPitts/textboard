@@ -13,7 +13,7 @@ object PostsSuite extends SimpleIOSuite:
     val postText = "Hello, world!"
     for
       counter <- Ref.of[IO, Int](0)
-      service = InMemPosts.inMemPosts[IO](counter)
+      service = InMemPosts.mkPosts[IO](counter)
       post <- service.create(postText)
       count <- counter.get
     yield expect(count == 1) and expect(post.text == postText)
@@ -23,7 +23,7 @@ object PostsSuite extends SimpleIOSuite:
     val postText = "Hello, world!"
     for
       counter <- Ref.of[IO, Int](0)
-      service = InMemPosts.inMemPosts[IO](counter)
+      service = InMemPosts.mkPosts[IO](counter)
       post <- service.create(postText)
       retrievedPost <- service.get(post.id, testThread.copy(posts = List(post)))
     yield expect(retrievedPost.contains(post))
@@ -34,7 +34,7 @@ object PostsSuite extends SimpleIOSuite:
     val postText2 = "Another post"
     for
       counter <- Ref.of[IO, Int](0)
-      service = InMemPosts.inMemPosts[IO](counter)
+      service = InMemPosts.mkPosts[IO](counter)
       post1 <- service.create(postText1)
       post2 <- service.create(postText2)
       allPosts <- service.getAll(testThread.copy(posts = List(post1, post2)))
@@ -46,7 +46,7 @@ object PostsSuite extends SimpleIOSuite:
     val postNum = 500
     for
       counter <- Ref.of[IO, Int](0)
-      service = InMemPosts.inMemPosts[IO](counter)
+      service = InMemPosts.mkPosts[IO](counter)
       posts <- service.create(postText).parReplicateA(postNum)
     yield expect(posts.map(_.id).distinct.size === postNum)
   }

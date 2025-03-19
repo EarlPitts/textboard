@@ -15,7 +15,7 @@ trait InMemThreads[F[_]]:
   def getAll: F[List[InMemThread]]
 
 object InMemThreads:
-  def inMemThreads[F[_]: Monad](
+  def mkThreads[F[_]: Monad](
       threads: Ref[F, List[InMemThread]]
   ): InMemThreads[F] = new InMemThreads[F]:
     def create(title: String, text: String): F[Int] =

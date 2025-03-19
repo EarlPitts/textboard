@@ -37,8 +37,8 @@ object PostingSuite extends SimpleIOSuite:
     for
       counter <- Ref.of(0)
       threadsList <- Ref.of(List.empty[InMemThread])
-      postsService = InMemPosts.inMemPosts(counter)
-      threadsService = InMemThreads.inMemThreads(threadsList)
+      postsService = InMemPosts.mkPosts(counter)
+      threadsService = InMemThreads.mkThreads(threadsList)
       _ <- createThread(postsService, threadsService).parReplicateA_(threadNum)
       threads <- threadsService.getAll
     yield expect(threads.map(_.id) === List.range(0, 10).reverse)
@@ -50,8 +50,8 @@ object PostingSuite extends SimpleIOSuite:
     for
       counter <- Ref.of(0)
       threadsList <- Ref.of(List.empty[InMemThread])
-      postsService = InMemPosts.inMemPosts(counter)
-      threadsService = InMemThreads.inMemThreads(threadsList)
+      postsService = InMemPosts.mkPosts(counter)
+      threadsService = InMemThreads.mkThreads(threadsList)
       _ <- createThread(postsService, threadsService).parReplicateA_(threadNum)
       _ <- addPost(postsService, threadsService, threadId)
       thread <- threadsService.get(threadId)
@@ -77,8 +77,8 @@ object PostingSuite extends SimpleIOSuite:
         c = testConsole(outputRef)
         counter <- Ref.of(0)
         threadsList <- Ref.of(List.empty[InMemThread])
-        postsService = InMemPosts.inMemPosts(counter)
-        threadsService = InMemThreads.inMemThreads(threadsList)
+        postsService = InMemPosts.mkPosts(counter)
+        threadsService = InMemThreads.mkThreads(threadsList)
         id1 <- createThread(postsService, threadsService)
         id2 <- createThread(postsService, threadsService)
         _ <- addPost(postsService, threadsService, id1)

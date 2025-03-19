@@ -14,7 +14,7 @@ trait InMemPosts[F[_]]:
   def getAll(thread: InMemThread): F[List[InMemPost]]
 
 object InMemPosts:
-  def inMemPosts[F[_]: Monad: Clock](
+  def mkPosts[F[_]: Monad: Clock](
       counter: Ref[F, Int]
   ): InMemPosts[F] = new InMemPosts[F]:
     def get(id: Int, thread: InMemThread): F[Option[InMemPost]] =

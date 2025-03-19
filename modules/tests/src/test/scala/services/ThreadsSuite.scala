@@ -17,7 +17,7 @@ object ThreadSuite extends SimpleIOSuite:
     val threadNum = 100
     for
       threads <- Ref.of(List[InMemThread]())
-      service = InMemThreads.inMemThreads(threads)
+      service = InMemThreads.mkThreads(threads)
       _ <- service.create("Title", "Text").replicateA_(threadNum)
       threadList <- threads.get
     yield expect(threadList.map(_.id) === List.range(0, 100).reverse)
@@ -27,7 +27,7 @@ object ThreadSuite extends SimpleIOSuite:
     val threadNum = 100
     for
       threads <- Ref.of(List[InMemThread]())
-      service = InMemThreads.inMemThreads(threads)
+      service = InMemThreads.mkThreads(threads)
       _ <- service.create("Title", "Text").replicateA(threadNum)
       threadList <- threads.get
       threadList2 <- service.getAll
@@ -38,7 +38,7 @@ object ThreadSuite extends SimpleIOSuite:
     val threadNum = 100
     for
       threads <- Ref.of(List[InMemThread]())
-      service = InMemThreads.inMemThreads(threads)
+      service = InMemThreads.mkThreads(threads)
       _ <- service.create("Title", "Text").replicateA(threadNum)
       threadList <- List.range(0, 100).traverse(service.get)
       threadList2 <- service.getAll
@@ -49,7 +49,7 @@ object ThreadSuite extends SimpleIOSuite:
     val postNum = 100
     for
       threads <- Ref.of(List[InMemThread]())
-      service = InMemThreads.inMemThreads(threads)
+      service = InMemThreads.mkThreads(threads)
       _ <- service.create("Title", "Text").replicateA_(10)
       ids <- List.range(0, 10).traverse(service.add(testPost, _))
       threadList <- threads.get
@@ -61,7 +61,7 @@ object ThreadSuite extends SimpleIOSuite:
     val postNum = 100
     for
       threads <- Ref.of(List[InMemThread]())
-      service = InMemThreads.inMemThreads(threads)
+      service = InMemThreads.mkThreads(threads)
       _ <- service.create("Title", "Text").replicateA_(postNum)
       id <- service.add(testPost, 100)
       threadList <- threads.get
@@ -72,7 +72,7 @@ object ThreadSuite extends SimpleIOSuite:
   test("Thread with invalid id is not found") {
     for
       threads <- Ref.of(List[InMemThread]())
-      service = InMemThreads.inMemThreads(threads)
+      service = InMemThreads.mkThreads(threads)
       _ <- service.create("Title", "Text").replicateA_(10)
       thread <- service.get(100)
     yield expect(thread.isEmpty)
@@ -82,7 +82,7 @@ object ThreadSuite extends SimpleIOSuite:
     val postNum = 100
     for
       threads <- Ref.of(List[InMemThread]())
-      service = InMemThreads.inMemThreads(threads)
+      service = InMemThreads.mkThreads(threads)
       _ <- service.create("Title", "Text")
       _ <- service.add(testPost, 0).parReplicateA_(postNum)
       t <- service.get(0)
@@ -93,7 +93,7 @@ object ThreadSuite extends SimpleIOSuite:
     val threadNum = 100
     for
       threads <- Ref.of(List[InMemThread]())
-      service = InMemThreads.inMemThreads(threads)
+      service = InMemThreads.mkThreads(threads)
       ids <- service.create("Title", "Text").parReplicateA(threadNum)
       threadList <- threads.get
     yield expect(threadList.map(_.id).reverse === List.range(0, threadNum)) and
