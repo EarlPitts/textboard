@@ -3,6 +3,19 @@ package textboard.domain
 import cats.*
 import cats.implicits.*
 
+case class InMemThread(
+    id: Int,
+    title: String,
+    text: String,
+    posts: List[InMemPost]
+) // extends AnyVal
+
+object InMemThread:
+  given Show[InMemThread] with
+    def show(t: InMemThread): String =
+      s"------------------------------------------------------\n" ++
+        s"Thread no. ${t.id} ${t.title}\n${t.text}\n${t.posts.map(_.show).mkString("\n")}"
+
 case class Thread(
     id: Int,
     title: String,

@@ -36,12 +36,10 @@ object PostingSuite extends SimpleIOSuite:
     val threadNum = 10
     for
       counter <- Ref.of(0)
-      threadsList <- Ref.of(List.empty[Thread])
-      postsService = Posts.inMemPosts(counter)
-      threadsService = Threads.inMemThreads(threadsList)
-      _ <- List
-        .fill(threadNum)(createThread(postsService, threadsService))
-        .parSequence_
+      threadsList <- Ref.of(List.empty[InMemThread])
+      postsService = InMemPosts.inMemPosts(counter)
+      threadsService = InMemThreads.inMemThreads(threadsList)
+      _ <- createThread(postsService, threadsService).parReplicateA_(threadNum)
       threads <- threadsService.getAll
     yield expect(threads.map(_.id) === List.range(0, 10).reverse)
   }
@@ -51,12 +49,10 @@ object PostingSuite extends SimpleIOSuite:
     val threadId = 5
     for
       counter <- Ref.of(0)
-      threadsList <- Ref.of(List.empty[Thread])
-      postsService = Posts.inMemPosts(counter)
-      threadsService = Threads.inMemThreads(threadsList)
-      _ <- List
-        .fill(threadNum)(createThread(postsService, threadsService))
-        .parSequence_
+      threadsList <- Ref.of(List.empty[InMemThread])
+      postsService = InMemPosts.inMemPosts(counter)
+      threadsService = InMemThreads.inMemThreads(threadsList)
+      _ <- createThread(postsService, threadsService).parReplicateA_(threadNum)
       _ <- addPost(postsService, threadsService, threadId)
       thread <- threadsService.get(threadId)
       otherThreads <- threadsService.getAll.map(_.filter(_.id =!= threadId))
@@ -80,15 +76,16 @@ object PostingSuite extends SimpleIOSuite:
         outputRef <- Ref.of(List.empty[String])
         c = testConsole(outputRef)
         counter <- Ref.of(0)
-        threadsList <- Ref.of(List.empty[Thread])
-        postsService = Posts.inMemPosts(counter)
-        threadsService = Threads.inMemThreads(threadsList)
+        threadsList <- Ref.of(List.empty[InMemThread])
+        postsService = InMemPosts.inMemPosts(counter)
+        threadsService = InMemThreads.inMemThreads(threadsList)
         id1 <- createThread(postsService, threadsService)
         id2 <- createThread(postsService, threadsService)
         _ <- addPost(postsService, threadsService, id1)
         _ <- addPost(postsService, threadsService, id2)
         _ <- showBoard(threadsService)(using c, effect)
         output <- outputRef.get
+        _ = println(output)
       yield expect(output.mkString.replaceAll("\\s", "") === expected)
     }
   }
