@@ -5,30 +5,46 @@ import cats.implicits.*
 import cats.effect.*
 import cats.effect.kernel.*
 import cats.effect.std.*
+import doobie.*
+import doobie.implicits.*
 
 import textboard.domain.*
 
 trait Posts[F[_]]:
-  def get(id: Int, thread: Thread): F[Option[Post]]
-  def create(text: String): F[Post]
-  def getAll(thread: Thread): F[List[Post]]
+  def get(id: Int): F[Option[Post]]
+  def create(content: String, threadId: Int): F[Option[Int]]
+  def getAll: F[List[Post]]
 
 object Posts:
-  def inMemPosts[F[_]: Monad: Clock](
-      counter: Ref[F, Int]
-  ): Posts[F] = new Posts[F]:
-    def get(id: Int, thread: Thread): F[Option[Post]] =
-      thread.posts.find(_.id === id).pure
+  def mkPosts[F[_]: Async](xa: Transactor[F]): Posts[F] = new Posts[F]:
+    def create(content: String, threadId: Int): F[Option[Int]] =
+      PostsSQL
+        .create(content, threadId)
+        .option
+        .transact(xa)
 
-    def create(text: String): F[Post] =
-      Clock[F].realTime
-        .flatMap { time =>
-          counter
-            .modify { id =>
-              val post = Post(id, text, time.toSeconds)
-              (id + 1, post)
-            }
-        }
+    def get(id: Int): F[Option[Post]] =
+      PostsSQL
+        .selectById(id)
+        .option
+        .transact(xa)
 
-    def getAll(thread: Thread): F[List[Post]] =
-      thread.posts.pure
+    def getAll: F[List[Post]] =
+      PostsSQL
+        .selectAll
+        .to[List]
+        .transact(xa)
+
+object PostsSQL:
+  def selectById(id: Int): Query0[Post] =
+    sql"select * from post where id = $id".query[Post]
+
+  def selectAll: Query0[Post] =
+    sql"select * from post".query[Post]
+
+  def create(content: String, threadId: Int): Query0[Int] =
+    sql"""
+      insert into post (content, threadid)
+      values ($content, $threadId)
+      returning id"""
+      .query[Int]

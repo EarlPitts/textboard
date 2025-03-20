@@ -20,6 +20,7 @@ case class Thread(
     id: Int,
     title: String,
     text: String,
+    time: Long,
     posts: List[Post]
 ) // extends AnyVal
 

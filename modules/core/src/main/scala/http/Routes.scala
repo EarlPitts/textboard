@@ -40,8 +40,7 @@ case class TextboardRoutes[F[_]: Monad: JsonDecoder](
     case req @ POST -> Root / "post" / "add" / IntVar(id) =>
       for
         payload <- req.asJsonDecode[PostRequest]
-        post <- posts.create(payload.text)
-        res <- threads.add(post, id)
+        res <- posts.create(payload.text, id)
         resp <- res match
           case None     => NotFound()
           case Some(id) => Created(id.asJson)

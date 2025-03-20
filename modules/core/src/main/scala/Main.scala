@@ -6,6 +6,8 @@ import cats.effect.std.*
 import cats.*
 import cats.implicits.*
 import com.comcast.ip4s._
+import doobie.*
+import doobie.implicits.*
 import org.http4s.server.Router
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Server
@@ -19,26 +21,28 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.Logger
 
 object Main extends IOApp.Simple:
-
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
-  def run: IO[Unit] = for
-    db <- Ref[IO].of(List.empty[Thread])
-    threadCnt <- Ref[IO].of(0)
-    postCnt <- Ref[IO].of(0)
+  def run: IO[Unit] =
+    val xa = Transactor.fromDriverManager[IO](
+      driver = "org.sqlite.JDBC",
+      url = "jdbc:sqlite:textboard.db",
+      user = "",
+      password = "",
+      logHandler = None
+    )
 
-    threads = Threads.inMemThreads(db, threadCnt)
-    posts = Posts.inMemPosts(postCnt)
+    val threads = Threads.mkThreads(xa)
+    val posts = Posts.mkPosts(xa)
 
-    httpApp = Router(
+    val httpApp = Router(
       "/" -> TextboardRoutes(threads, posts).httpRoutes
     ).orNotFound
-    server = EmberServerBuilder
+    val server = EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
       .withPort(port"8080")
       .withHttpApp(httpApp)
       .build
 
-    _ <- server.useForever
-  yield ()
+    server.useForever
